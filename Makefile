@@ -13,7 +13,7 @@ APP_DIR := .
 ifeq ($(OS),Windows_NT)
 	PLATFORM := windows
 	SCRIPT_EXT := .ps1
-	SCRIPT_CMD := powershell -NoProfile -ExecutionPolicy Bypass -File
+	SCRIPT_CMD := pwsh.exe -NoProfile -ExecutionPolicy Bypass -File
 else
 	PLATFORM := linux
 	SCRIPT_EXT := .sh
@@ -44,7 +44,7 @@ help:
 
 # Build target - main compilation
 build:
-	$(SCRIPT_CMD) scripts/make/$(PLATFORM)/build$(SCRIPT_EXT) $(APP_DIR)
+	$(SCRIPT_CMD) scripts/make/$(PLATFORM)/build$(SCRIPT_EXT) $(APP_DIR) | tee build.log
 
 # Clean build artifacts
 clean:

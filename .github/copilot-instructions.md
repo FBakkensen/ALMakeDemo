@@ -9,9 +9,11 @@ This is a cross-platform AL (Business Central) extension project. The codebase i
 - `scripts/make/windows/` and `scripts/make/linux/`: Contains PowerShell and Bash scripts for build, clean, config, and analyzer operations. Each script imports shared logic from their respective `lib/` directories.
 
 ## Build & Clean Workflow
+
 - **Build:** Run `make build` (or just `make`). This calls the platform-specific build script:
   - Windows: `scripts/make/windows/build.ps1`
   - Linux: `scripts/make/linux/build.sh`
+  - The build output is piped to both the terminal and `build.log` using `tee`. Always read `build.log` for the complete build output and diagnostics.
 - **Clean:** Run `make clean` to remove build artifacts.
 - **Show Config/Analyzers:** Use `make show-config` and `make show-analyzers` for diagnostics.
 
