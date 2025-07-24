@@ -10,12 +10,13 @@ pageextension 50100 CustomerListExt extends "Customer List"
 {
     layout
     {
-        addafter("Phone No.")
+        addlast(content)
         {
             field(BalanceDue; Rec."Balance Due")
             {
                 ApplicationArea = All;
                 Caption = 'Balance Due';
+                ToolTip = 'Shows the outstanding balance amount for the customer';
             }
         }
     }
