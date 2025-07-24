@@ -1,6 +1,8 @@
 
 # Windows Build Script
 param([string]$AppDir = "app")
+# Resolve $AppDir to its full path
+$ResolvedAppDir = (Resolve-Path $AppDir).Path
 # Import shared libraries (must be at the very top)
 . "$PSScriptRoot\lib\common.ps1"
 . "$PSScriptRoot\lib\json-parser.ps1"
@@ -13,23 +15,23 @@ if (-not (Get-Command Get-EnabledAnalyzerPaths -ErrorAction SilentlyContinue)) {
 
 
 # Discover AL compiler
-$alcPath = Get-ALCompilerPath $AppDir
+$alcPath = Get-ALCompilerPath $ResolvedAppDir
 if (-not $alcPath) {
     Write-Host "AL Compiler not found. Please ensure AL extension is installed in VS Code." -ForegroundColor Red
     exit 1
 }
 
 # Get enabled analyzer DLL paths
-$analyzerPaths = Get-EnabledAnalyzerPaths $AppDir
+$analyzerPaths = Get-EnabledAnalyzerPaths $ResolvedAppDir
 
 
 # Get output and package cache paths
-$outputFullPath = Get-OutputPath $AppDir
+$outputFullPath = Get-OutputPath $ResolvedAppDir
 if (-not $outputFullPath) {
     Write-Host "[ERROR] Output path could not be determined. Check app.json and Get-OutputPath function." -ForegroundColor Red
     exit 1
 }
-$packageCachePath = Get-PackageCachePath $AppDir
+$packageCachePath = Get-PackageCachePath $ResolvedAppDir
 if (-not $packageCachePath) {
     Write-Host "[ERROR] Package cache path could not be determined." -ForegroundColor Red
     exit 1
@@ -69,7 +71,7 @@ if ($analyzerPaths.Count -gt 0) {
 
 
 # Build analyzer arguments correctly
-$cmdArgs = @("/project:$AppDir", "/out:$outputFullPath", "/packagecachepath:$packageCachePath")
+$cmdArgs = @("/project:$ResolvedAppDir", "/out:$outputFullPath", "/packagecachepath:$packageCachePath")
 if ($analyzerPaths.Count -gt 0) {
     foreach ($analyzer in $analyzerPaths) {
         $cmdArgs += "/analyzer:$analyzer"
