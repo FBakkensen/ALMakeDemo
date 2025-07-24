@@ -1,5 +1,8 @@
 # Copilot Instructions for ALMakeDemo
 
+## VERY IMPORTANT: Build Quality Requirement
+The build must run **without any warnings and errors**. This is a strict requirement for all code changes and build processes. Any warning or error in the build output is considered a failure and must be resolved before proceeding.
+
 ## Project Overview
 This is a cross-platform AL (Business Central) extension project. The codebase is structured to support both Windows and Linux builds using platform-specific scripts, with a unified Makefile as the entry point for developer workflows.
 
@@ -10,19 +13,6 @@ This is a cross-platform AL (Business Central) extension project. The codebase i
 
 ## Build & Clean Workflow
 
-- **Build:** Run `make build` (or just `make`). This calls the platform-specific build script:
-  - Windows: `scripts/make/windows/build.ps1`
-  - Linux: `scripts/make/linux/build.sh`
-  - The build output is piped to both the terminal and `build.log` using `tee`. Always read `build.log` for the complete build output and diagnostics.
-- **Clean:** Run `make clean` to remove build artifacts.
-- **Show Config/Analyzers:** Use `make show-config` and `make show-analyzers` for diagnostics.
-
-## AL Compiler & Analyzers
-- The build scripts auto-discover the AL compiler (`alc.exe`) from the highest version of the VS Code AL extension installed.
-- Analyzer DLLs (e.g., CodeCop, UICop) are enabled via `.vscode/settings.json` or defaulted if not specified. The scripts resolve their paths automatically.
-- Output `.app` files are named using the pattern `{Publisher}_{AppName}_{Version}.app` and placed in the app directory.
-
-## Project-Specific Patterns
 - All shared logic for script operations is in `lib/common.ps1` (Windows) and `lib/common.sh` (Linux).
 - JSON parsing helpers are in `lib/json-parser.ps1` and `lib/json-parser.sh`.
 - AL objects should use unique IDs and names, as shown in `HelloWorld.al`.
