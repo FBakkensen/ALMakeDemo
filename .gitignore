@@ -1,0 +1,36 @@
+# AL for Business Central .gitignore
+# Build output
+out/
+bin/
+obj/
+
+# AL extension packages
+.alpackages/
+
+# VS Code settings and workspace files
+.vscode/
+*.code-workspace
+
+# App and package files
+*.app
+*.zip
+*.tmp
+
+# OS-specific files
+Thumbs.db
+.DS_Store
+
+# Log files
+*.log
+
+# Node modules (if used)
+node_modules/
+
+# Other temporary files
+~$*
+*.bak
+*.swp
+*.swo
+
+# Ignore scripts output (if any)
+scripts/make/*/output/
