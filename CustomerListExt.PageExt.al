@@ -12,7 +12,7 @@ pageextension 50100 CustomerListExt extends "Customer List"
     {
         addafter("Phone No.")
         {
-            field(BalanceDue; Rec."Balance (LCY)")
+            field(BalanceDue; Rec."Balance Due")
             {
                 ApplicationArea = All;
                 Caption = 'Balance Due';
