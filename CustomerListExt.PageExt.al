@@ -19,6 +19,16 @@ pageextension 50100 CustomerListExt extends "Customer List"
                 ToolTip = 'Shows the outstanding balance amount for the customer';
             }
         }
+
+        addlast(factboxes)
+        {
+            part(ContactFactBox; "Contact FactBox")
+            {
+                ApplicationArea = All;
+                Caption = 'Contacts';
+                SubPageLink = "Link to Table" = const(Customer), "No." = field("No.");
+            }
+        }
     }
 
     trigger OnOpenPage();
