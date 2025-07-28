@@ -60,14 +60,19 @@ if ! command -v unzip &> /dev/null; then
     exit 1
 fi
 
-if ! command -v nuget &> /dev/null; then
-    echo "Error: nuget not found. This script requires the NuGet CLI."
+if ! command -v mono &> /dev/null; then
+    echo "Error: mono not found. This script requires mono to run nuget.exe."
+    exit 1
+fi
+
+if [ ! -f "/usr/local/bin/nuget.exe" ]; then
+    echo "Error: /usr/local/bin/nuget.exe not found. This script requires the NuGet CLI."
     exit 1
 fi
 
 echo "Using curl $(curl --version | head -1)"
 echo "Using unzip $(unzip -v | head -1)"
-echo "Using nuget $(nuget | head -1)"
+echo "Using nuget $(mono /usr/local/bin/nuget.exe | head -1)"
 
 # Check if jq is available for JSON parsing (optional but recommended)
 # Check if jq is available for JSON parsing (optional but recommended)
@@ -101,13 +106,13 @@ echo "Setting up NuGet sources..."
 
 # Add the MSSymbols feed
 echo "Adding NuGet source for Microsoft Symbols..."
-nuget sources Add -Name "MSSymbols" -Source "https://dynamicssmb2.pkgs.visualstudio.com/DynamicsBCPublicFeeds/_packaging/MSSymbols/nuget/v3/index.json" -NonInteractive
+mono /usr/local/bin/nuget.exe sources Add -Name "MSSymbols" -Source "https://dynamicssmb2.pkgs.visualstudio.com/DynamicsBCPublicFeeds/_packaging/MSSymbols/nuget/v3/index.json" -NonInteractive
 echo "Adding NuGet source for AppSource Symbols..."
-nuget sources Add -Name "AppSource" -Source "https://dynamicssmb2.pkgs.visualstudio.com/DynamicsBCPublicFeeds/_packaging/AppSourceSymbols/nuget/v3/index.json" -NonInteractive
+mono /usr/local/bin/nuget.exe sources Add -Name "AppSource" -Source "https://dynamicssmb2.pkgs.visualstudio.com/DynamicsBCPublicFeeds/_packaging/AppSourceSymbols/nuget/v3/index.json" -NonInteractive
 
 # Download latest Microsoft.Application.symbols with dependencies
 echo "Downloading Microsoft.Application.symbols and its dependencies..."
-nuget install Microsoft.Application.symbols -Source MSSymbols -OutputDirectory "$SYMBOLS_PATH" -Prerelease -DependencyVersion Highest -NonInteractive
+mono /usr/local/bin/nuget.exe install Microsoft.Application.symbols -Source MSSymbols -OutputDirectory "$SYMBOLS_PATH" -Prerelease -DependencyVersion Highest -NonInteractive
 
 # Download dependencies from app.json
 echo "Downloading dependencies from app.json..."
@@ -123,7 +128,7 @@ jq -c '.dependencies[]' "$APP_JSON_PATH" | while read -r dep; do
     echo "➡️  Processing dependency: $NAME by $PUBLISHER"
     echo "  Attempting to install package: $PACKAGE_NAME"
 
-    if nuget install "$PACKAGE_NAME" -Source "AppSource" -OutputDirectory "$SYMBOLS_PATH" -Prerelease -DependencyVersion Highest -NonInteractive; then
+    if mono /usr/local/bin/nuget.exe install "$PACKAGE_NAME" -Source "AppSource" -OutputDirectory "$SYMBOLS_PATH" -Prerelease -DependencyVersion Highest -NonInteractive; then
         echo "  ✅ Successfully downloaded $PACKAGE_NAME"
     else
         echo "  ⚠️  Failed to download dependency '$NAME'. Package $PACKAGE_NAME not found in AppSource feed or requires a specific version."
