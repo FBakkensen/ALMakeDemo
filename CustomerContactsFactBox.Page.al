@@ -94,8 +94,8 @@ page 50101 "Customer Contacts FactBox"
     end;
 
     var
-        ContactName: Text[100];
+        ContactName: Text;
         ContactType: Enum "Contact Type";
-        ContactPhone: Text[30];
-        ContactEmail: Text[80];
+        ContactPhone: Text;
+        ContactEmail: Text;
 }
