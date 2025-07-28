@@ -104,11 +104,20 @@ ORGANIZE_APP_FILES() {
 # Setup NuGet sources
 echo "Setting up NuGet sources..."
 
-# Add the MSSymbols feed
+# Add the MSSymbols feed (check if it exists first)
 echo "Adding NuGet source for Microsoft Symbols..."
-mono /usr/local/bin/nuget.exe sources Add -Name "MSSymbols" -Source "https://dynamicssmb2.pkgs.visualstudio.com/DynamicsBCPublicFeeds/_packaging/MSSymbols/nuget/v3/index.json" -NonInteractive
+if ! mono /usr/local/bin/nuget.exe sources List -NonInteractive | grep -q "MSSymbols"; then
+    mono /usr/local/bin/nuget.exe sources Add -Name "MSSymbols" -Source "https://dynamicssmb2.pkgs.visualstudio.com/DynamicsBCPublicFeeds/_packaging/MSSymbols/nuget/v3/index.json" -NonInteractive
+else
+    echo "  MSSymbols source already exists, skipping..."
+fi
+
 echo "Adding NuGet source for AppSource Symbols..."
-mono /usr/local/bin/nuget.exe sources Add -Name "AppSource" -Source "https://dynamicssmb2.pkgs.visualstudio.com/DynamicsBCPublicFeeds/_packaging/AppSourceSymbols/nuget/v3/index.json" -NonInteractive
+if ! mono /usr/local/bin/nuget.exe sources List -NonInteractive | grep -q "AppSource"; then
+    mono /usr/local/bin/nuget.exe sources Add -Name "AppSource" -Source "https://dynamicssmb2.pkgs.visualstudio.com/DynamicsBCPublicFeeds/_packaging/AppSourceSymbols/nuget/v3/index.json" -NonInteractive
+else
+    echo "  AppSource source already exists, skipping..."
+fi
 
 # Download latest Microsoft.Application.symbols with dependencies
 echo "Downloading Microsoft.Application.symbols and its dependencies..."
