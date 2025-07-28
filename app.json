@@ -10,14 +10,7 @@
   "help": "",
   "url": "",
   "logo": "",
-  "dependencies": [
-    {
-      "id": "e340d5b5-f7eb-44db-b802-fd3b7896e0a7",
-      "name": "9A Advanced Manufacturing - License",
-      "publisher": "9altitudes",
-      "version": "24.7.0.0"
-    }
-  ],
+  "dependencies": [],
   "screenshots": [],
   "platform": "1.0.0.0",
   "application": "26.0.0.0",
