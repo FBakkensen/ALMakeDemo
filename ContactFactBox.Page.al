@@ -52,38 +52,44 @@ page 50101 "Contact FactBox"
         }
     }
 
-    local procedure GetContactName(): Text[100]
     var
         Contact: Record Contact;
+        ContactLoaded: Boolean;
+
+    trigger OnAfterGetRecord()
     begin
-        if Contact.Get(Rec."Contact No.") then
+        LoadContact();
+    end;
+
+    local procedure LoadContact()
+    begin
+        ContactLoaded := Contact.Get(Rec."Contact No.");
+    end;
+
+    local procedure GetContactName(): Text[100]
+    begin
+        if ContactLoaded then
             exit(Contact.Name);
         exit('');
     end;
 
     local procedure GetContactType(): Text[30]
-    var
-        Contact: Record Contact;
     begin
-        if Contact.Get(Rec."Contact No.") then
+        if ContactLoaded then
             exit(Format(Contact.Type));
         exit('');
     end;
 
     local procedure GetContactPhone(): Text[30]
-    var
-        Contact: Record Contact;
     begin
-        if Contact.Get(Rec."Contact No.") then
+        if ContactLoaded then
             exit(Contact."Phone No.");
         exit('');
     end;
 
     local procedure GetContactEmail(): Text[80]
-    var
-        Contact: Record Contact;
     begin
-        if Contact.Get(Rec."Contact No.") then
+        if ContactLoaded then
             exit(Contact."E-Mail");
         exit('');
     end;
