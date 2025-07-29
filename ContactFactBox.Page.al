@@ -56,7 +56,7 @@ page 50101 "Contact FactBox"
         Contact: Record Contact;
         ContactLoaded: Boolean;
 
-    trigger OnAfterGetRecord()
+    trigger OnAfterGetCurrRecord()
     begin
         LoadContact();
     end;
