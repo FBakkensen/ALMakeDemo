@@ -16,7 +16,7 @@ pageextension 50100 CustomerListExt extends "Customer List"
             {
                 ApplicationArea = All;
                 Caption = 'Balance Due';
-                ToolTip = 'Shows the outstanding balance amount for the customer';
+                ToolTip = 'Specifies the outstanding balance amount for the customer.';
             }
         }
 
