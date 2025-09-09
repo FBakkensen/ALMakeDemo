@@ -15,7 +15,7 @@ page 50101 "Contact FactBox"
 
     layout
     {
-        area(content)
+        area(Content)
         {
             repeater(General)
             {
