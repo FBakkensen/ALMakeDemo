@@ -1,0 +1,6 @@
+{
+  "name": "DefaultRuleSet",
+  "description": "Empty ruleset; customize to change analyzer severities.",
+  "rules": []
+}
+

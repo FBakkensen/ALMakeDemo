@@ -61,6 +61,11 @@ ALMakeDemo/
 - **JSON Parsers**: Robust helpers for reading and validating config files.
 - **Analyzer Discovery**: Automatically finds enabled analyzers and their DLLs.
 
+### 4. **Ruleset (Optional)**
+- Provide a ruleset file to adjust analyzer severities (e.g., promote Info to Warning).
+- Configure the path via `RULESET_PATH` in the `Makefile`. If the file is missing or empty, the build skips `/ruleset` automatically.
+- Example default file included: `ruleset.json` with an empty rules list you can extend.
+
 ---
 
 ## 📚 Educational Highlights
@@ -97,6 +102,11 @@ ALMakeDemo/
 5. **List analyzers**
    ```powershell
    make show-analyzers
+   ```
+
+6. **Build with a ruleset (optional)**
+   ```sh
+   RULESET_PATH=ruleset.json make build
    ```
 
 ---
