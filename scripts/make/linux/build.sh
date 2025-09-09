@@ -80,6 +80,14 @@ for analyzer_path in "${analyzer_paths[@]}"; do
     cmd_args+=("/analyzer:$analyzer_path")
 done
 
+# Optional: treat warnings as errors when requested
+wae="${WARN_AS_ERROR:-0}"
+shopt -s nocasematch
+if [[ "$wae" == "1" || "$wae" == "true" || "$wae" == "yes" || "$wae" == "on" ]]; then
+    cmd_args+=("/warnaserror+")
+fi
+shopt -u nocasematch
+
 # Execute AL compiler
 "$alc_path" "${cmd_args[@]}"
 exit_code=$?
