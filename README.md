@@ -13,9 +13,11 @@ Welcome to **ALMakeDemo**! This project demonstrates a robust, cross-platform bu
 ## 🗂️ Project Structure
 ```
 ALMakeDemo/
-├── app.json                # Main AL app manifest
+├── app/                    # Main AL app (app.json + .al sources)
+├── test/                   # Test app (depends on app + Library Assert)
 ├── Makefile                # Unified build entry point
 ├── scripts/
+│   ├── cloud/              # Headless Linux toolchain: al CLI, ALCops, al-runner
 │   └── make/
 │       ├── windows/        # Windows PowerShell scripts
 │       │   ├── build.ps1
@@ -108,6 +110,29 @@ ALMakeDemo/
    ```sh
    RULESET_PATH=ruleset.json make build
    ```
+
+---
+
+## ☁️ Headless Linux / Cloud Sessions (al CLI + ALCops + al-runner)
+No VS Code needed. `scripts/cloud/` uses the `al` dotnet tool to compile, the
+Microsoft cops plus [ALCops](https://www.nuget.org/packages/ALCops.Analyzers) to analyze,
+and [al-runner](https://github.com/StefanMaron/BusinessCentral.AL.Runner) to run tests in-process.
+
+```sh
+bash scripts/cloud/setup.sh      # once per machine (use it as the cloud environment setup script)
+scripts/cloud/build.sh app       # restore symbols + compile app with analyzers
+scripts/cloud/test.sh            # compile app + test app, run tests with al-runner
+```
+
+Notes:
+- `setup.sh` installs the .NET 10 runtime + ASP.NET Core 10 runtime and patches
+  al-runner's runtimeconfig to use them: the BC 27/28 engine DLLs it loads need
+  .NET 10 (`System.Diagnostics.EventLog 10.0`), and fail on .NET 8 alone.
+- The AL tool package is `Microsoft.Dynamics.BusinessCentral.Development.Tools`;
+  the `.Linux` package is only a library dependency and can't be installed as a tool.
+- Symbols come straight from the public MSSymbols NuGet feed (`restore-symbols.py`), no mono/nuget.exe.
+- al-runner only ships BC 27.x/28.x engines, so tests run on BC 28.5 (`BC_VERSION`) while
+  the app still compiles against its declared `application` version (26.x).
 
 ---
 
