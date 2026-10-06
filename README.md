@@ -125,9 +125,10 @@ scripts/cloud/test.sh            # compile app + test app, run tests with al-run
 ```
 
 Notes:
-- `setup.sh` installs the .NET 10 runtime + ASP.NET Core 10 runtime and patches
-  al-runner's runtimeconfig to use them: the BC 27/28 engine DLLs it loads need
-  .NET 10 (`System.Diagnostics.EventLog 10.0`), and fail on .NET 8 alone.
+- `setup.sh` installs the .NET 10 runtime + ASP.NET Core 10 runtime. For al-runner
+  releases up to 2.12.0 it also patches al-runner's runtimeconfig to run on them
+  (workaround for a bug fixed on al-runner main: the BC 27/28 engine DLLs need
+  `System.Diagnostics.EventLog 10.0` and crash on .NET 8). Newer releases skip the patch.
 - The AL tool package is `Microsoft.Dynamics.BusinessCentral.Development.Tools`;
   the `.Linux` package is only a library dependency and can't be installed as a tool.
 - Symbols come straight from the public MSSymbols NuGet feed (`restore-symbols.py`), no mono/nuget.exe.

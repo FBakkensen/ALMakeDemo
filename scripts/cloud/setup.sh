@@ -3,7 +3,7 @@
 # Idempotent: safe to re-run. Suitable as the cloud environment "setup script".
 #
 # Installs:
-#   - .NET 10 runtime + ASP.NET Core 10 runtime (al-runner needs them: BC 27/28
+#   - .NET 10 runtime + ASP.NET Core 10 runtime (al-runner prerequisite; BC 27/28
 #     service-tier DLLs reference .NET 10 assemblies such as System.Diagnostics.EventLog 10.0)
 #   - `al`        Microsoft.Dynamics.BusinessCentral.Development.Tools (AL compiler CLI + Microsoft cops)
 #   - `al-runner` MSDyn365BC.AL.Runner (in-process AL test runner)
@@ -27,11 +27,16 @@ fi
 dotnet tool update -g Microsoft.Dynamics.BusinessCentral.Development.Tools
 dotnet tool update -g MSDyn365BC.AL.Runner
 
-# al-runner ships net8 runtimeconfigs but loads BC service-tier DLLs built for .NET 10.
-# Run it on .NET 10 with the ASP.NET Core framework referenced, so the framework's
-# System.Diagnostics.EventLog 10.0 wins over the bundled 8.0 copy.
-find "$HOME/.dotnet/tools/.store/msdyn365bc.al.runner" -name al-runner.runtimeconfig.json -print0 |
-    xargs -0 python3 -I -c '
+# WORKAROUND for an al-runner bug in releases up to 2.12.0 (fixed on main): it ships
+# net8 runtimeconfigs but loads BC service-tier DLLs built for .NET 10, and crashes on
+# System.Diagnostics.EventLog 10.0. Run it on .NET 10 with the ASP.NET Core framework
+# referenced so the framework's EventLog 10.0 wins over the bundled 8.0 copy.
+# Skipped automatically for newer releases; delete this block once they ship.
+AL_RUNNER_VERSION="$(al-runner --version | grep -oE '[0-9]+\.[0-9]+\.[0-9]+' | head -1)"
+if [[ "$(printf '%s\n' "$AL_RUNNER_VERSION" 2.12.0 | sort -V | head -1)" == "$AL_RUNNER_VERSION" ]]; then
+    echo "Patching al-runner $AL_RUNNER_VERSION to run on .NET 10 (EventLog workaround)"
+    find "$HOME/.dotnet/tools/.store/msdyn365bc.al.runner" -name al-runner.runtimeconfig.json -print0 |
+        xargs -0 python3 -I -c '
 import json, sys
 for path in sys.argv[1:]:
     with open(path) as f:
@@ -44,7 +49,8 @@ for path in sys.argv[1:]:
     with open(path, "w") as f:
         json.dump(cfg, f, indent=2)
 '
-rm -rf "$HOME/.cache/al-runner/ncl-shadow"   # shadow copies carry the old runtimeconfig
+    rm -rf "$HOME/.cache/al-runner/ncl-shadow"   # shadow copies carry the old runtimeconfig
+fi
 
 # --- ALCops analyzers ---
 ALCOPS_DIR="$HOME/.alcops/$ALCOPS_VERSION"
