@@ -8,9 +8,17 @@
 #   - `al`        Microsoft.Dynamics.BusinessCentral.Development.Tools (AL compiler CLI + Microsoft cops)
 #   - `al-runner` MSDyn365BC.AL.Runner (in-process AL test runner)
 #   - ALCops analyzers into ~/.alcops
+#   - al-runner's BC engine + platform/test apps (PREPROVISION_BC, so the first test run is fast)
+# Fails loudly: any failed step, or a tool missing at the end, exits non-zero.
+#
+# Env (all optional):
+#   AL_TOOL_VERSION / AL_RUNNER_VERSION  pin a tool version (default: latest stable)
+#   ALCOPS_VERSION                       default 1.3.1
+#   PREPROVISION_BC                      BC version for al-runner artifacts (default 28.5, empty = skip)
 set -euo pipefail
 
 ALCOPS_VERSION="${ALCOPS_VERSION:-1.3.1}"
+PREPROVISION_BC="${PREPROVISION_BC-28.5}"
 DOTNET_DIR="$(dirname "$(readlink -f "$(command -v dotnet)")")"
 export PATH="$HOME/.dotnet/tools:$PATH"
 
@@ -24,17 +32,23 @@ fi
 # --- dotnet tools ---
 # Note: the package is Microsoft.Dynamics.BusinessCentral.Development.Tools; the
 # ".Linux" package is only a library dependency, not an installable tool.
-dotnet tool update -g Microsoft.Dynamics.BusinessCentral.Development.Tools
-dotnet tool update -g MSDyn365BC.AL.Runner
+dotnet tool update -g Microsoft.Dynamics.BusinessCentral.Development.Tools ${AL_TOOL_VERSION:+--version "$AL_TOOL_VERSION"}
+dotnet tool update -g MSDyn365BC.AL.Runner ${AL_RUNNER_VERSION:+--version "$AL_RUNNER_VERSION"}
+
+# ~/.dotnet/tools is not on PATH for non-interactive shells (where agents run commands),
+# so link the tools into /usr/local/bin as well.
+for tool in al al-runner; do
+    ln -sf "$HOME/.dotnet/tools/$tool" "/usr/local/bin/$tool"
+done
 
 # WORKAROUND for an al-runner bug in releases up to 2.12.0 (fixed on main): it ships
 # net8 runtimeconfigs but loads BC service-tier DLLs built for .NET 10, and crashes on
 # System.Diagnostics.EventLog 10.0. Run it on .NET 10 with the ASP.NET Core framework
 # referenced so the framework's EventLog 10.0 wins over the bundled 8.0 copy.
 # Skipped automatically for newer releases; delete this block once they ship.
-AL_RUNNER_VERSION="$(al-runner --version | grep -oE '[0-9]+\.[0-9]+\.[0-9]+' | head -1)"
-if [[ "$(printf '%s\n' "$AL_RUNNER_VERSION" 2.12.0 | sort -V | head -1)" == "$AL_RUNNER_VERSION" ]]; then
-    echo "Patching al-runner $AL_RUNNER_VERSION to run on .NET 10 (EventLog workaround)"
+INSTALLED_AL_RUNNER="$(al-runner --version | grep -oE '[0-9]+\.[0-9]+\.[0-9]+' | head -1)"
+if [[ "$(printf '%s\n' "$INSTALLED_AL_RUNNER" 2.12.0 | sort -V | head -1)" == "$INSTALLED_AL_RUNNER" ]]; then
+    echo "Patching al-runner $INSTALLED_AL_RUNNER to run on .NET 10 (EventLog workaround)"
     find "$HOME/.dotnet/tools/.store/msdyn365bc.al.runner" -name al-runner.runtimeconfig.json -print0 |
         xargs -0 python3 -I -c '
 import json, sys
@@ -61,9 +75,16 @@ if [[ ! -f "$ALCOPS_DIR/ALCops.Common.dll" ]]; then
     unzip -oqj /tmp/alcops.nupkg 'lib/net8.0/*' -d "$ALCOPS_DIR"
 fi
 
-# Make the dotnet tools available in new shells
-grep -q '.dotnet/tools' "$HOME/.bashrc" 2>/dev/null || echo 'export PATH="$HOME/.dotnet/tools:$PATH"' >> "$HOME/.bashrc"
+# --- Pre-provision al-runner artifacts (~140 MB engine + apps; otherwise the first test run downloads them) ---
+if [[ -n "$PREPROVISION_BC" ]]; then
+    for set in --service-tier --platform-apps --test-apps; do
+        al-runner provision "$set" --bc-version "$PREPROVISION_BC"
+    done
+fi
 
-echo "al:        $(al --version 2>/dev/null | head -1)"
-echo "al-runner: $(al-runner --version 2>/dev/null | head -1)"
+# --- Verify (from a clean PATH, the way agents will call the tools) ---
+env PATH=/usr/local/bin:/usr/bin:/bin al --version | head -1
+env PATH=/usr/local/bin:/usr/bin:/bin al-runner --version | head -1
+ls "$ALCOPS_DIR"/ALCops.Common.dll >/dev/null
 echo "ALCops:    $ALCOPS_DIR"
+echo "AL toolchain ready."
